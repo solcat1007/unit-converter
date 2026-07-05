@@ -9,6 +9,8 @@
 body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#fff;color:#333;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;overflow:hidden}
 #lang-btn{position:fixed;top:20px;left:20px;z-index:100;padding:8px 16px;background:#00BCD4;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-family:inherit;transition:background .2s}
 #lang-btn:hover{background:#0097A7}
+#fs-btn{position:fixed;top:20px;right:20px;z-index:100;padding:8px 16px;background:#00BCD4;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-family:inherit;transition:background .2s}
+#fs-btn:hover{background:#0097A7}
 #app{max-width:500px;width:90%;text-align:center}
 h2{font-weight:400;color:#00BCD4;margin-bottom:24px;font-size:22px}
 #category-tabs{display:flex;gap:4px;margin-bottom:20px;justify-content:center;flex-wrap:wrap}
@@ -30,6 +32,8 @@ input[type="number"]:focus{border-color:#00BCD4}
 </style>
 </head>
 <body>
+
+<button id="fs-btn" onclick="toggleFS()" data-key="fsBtn">全屏</button>
 
 <button id="lang-btn" onclick="toggleLang()" data-key="langBtn">中/EN</button>
 
@@ -196,6 +200,8 @@ function convert(){
 }
 
 popUnits();
+
+function toggleFS(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
 </script>
 </body>
 </html>
