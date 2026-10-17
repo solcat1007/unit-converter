@@ -2,206 +2,341 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>单位换算器 · Unit Converter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>单位换算 · 常用单位互转</title>
+<meta name="description" content="长度、重量、温度、面积、体积、时间、速度、数据存储等单位互转">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg">
+<meta name="theme-color" content="#42a5f5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="单位换算">
 <style>
+
+:root{
+  --bg:#f4f5f7;           /* 页面底色：浅灰，避免纯白刺眼 */
+  --bg-glow:#ffffff;      /* 顶部径向光晕色，制造轻微的空间感 */
+  --surface:#ffffff;      /* 卡片底色 */
+  --surface-2:#fafbfc;    /* 卡片内的次级区块（输入框、结果区） */
+  --text:#16181d;         /* 主文字 */
+  --soft:#5d636e;         /* 次要文字 */
+  --mute:#8b929e;         /* 弱化文字（提示、单位、占位符） */
+  --line:#e6e8ec;         /* 分割线与边框 */
+  --accent:#26a69a;       /* 强调色（各玩具不同） */
+  --accent-soft:#e6f4f2;  /* 强调色的浅色版，用于底色块 */
+  --r-lg:20px; --r-md:14px; --r-sm:10px;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#fff;color:#333;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;overflow:hidden}
-#lang-btn{position:fixed;top:20px;left:20px;z-index:100;padding:8px 16px;background:#00BCD4;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-family:inherit;transition:background .2s}
-#lang-btn:hover{background:#0097A7}
-#fs-btn{position:fixed;top:20px;right:20px;z-index:100;padding:8px 16px;background:#00BCD4;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-family:inherit;transition:background .2s}
-#fs-btn:hover{background:#0097A7}
-#app{max-width:500px;width:90%;text-align:center}
-h2{font-weight:400;color:#00BCD4;margin-bottom:24px;font-size:22px}
-#category-tabs{display:flex;gap:4px;margin-bottom:20px;justify-content:center;flex-wrap:wrap}
-.cat-tab{padding:8px 16px;border:2px solid #ddd;border-radius:20px;background:transparent;cursor:pointer;font-size:13px;color:#888;font-family:inherit;transition:all .2s}
-.cat-tab.active{background:#00BCD4;color:#fff;border-color:#00BCD4}
-.converter-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;justify-content:center}
-input[type="number"]{width:140px;padding:12px;border:2px solid #e0f7fa;border-radius:8px;font-size:18px;text-align:center;outline:none;font-family:inherit;transition:border-color .2s}
-input[type="number"]:focus{border-color:#00BCD4}
-.unit-select{padding:10px 12px;border:2px solid #e0f7fa;border-radius:8px;font-size:14px;font-family:inherit;outline:none;cursor:pointer;background:#fff;transition:border-color .2s}
-.unit-select:focus{border-color:#00BCD4}
-.swap-btn{width:40px;height:40px;border-radius:50%;border:2px solid #00BCD4;background:#fff;color:#00BCD4;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.swap-btn:hover{background:#e0f7fa}
-#result-row{margin-top:16px;padding:16px;background:#f0f8f9;border-radius:10px}
-#result{font-size:28px;color:#00BCD4;font-weight:300}
-#formula{font-size:12px;color:#aaa;margin-top:6px}
-#presets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
-.preset-btn{padding:6px 14px;border:1px solid #e0f7fa;border-radius:14px;background:#fff;cursor:pointer;font-size:12px;color:#666;font-family:inherit;transition:all .2s}
-.preset-btn:hover{background:#e0f7fa;border-color:#00BCD4}
+
+body{
+  font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--bg);
+  /* 顶部一层极淡光晕，比死板的纯色更有层次 */
+  background-image:radial-gradient(120% 80% at 50% 0%, var(--bg-glow) 0%, rgba(255,255,255,0) 62%);
+  background-attachment:fixed;
+  color:var(--text);
+  min-height:100dvh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:24px; -webkit-font-smoothing:antialiased;
+}
+
+.app{width:100%; max-width:480px; display:flex; flex-direction:column; align-items:center; gap:20px}
+
+.head{text-align:center}
+.head h1{font-size:22px; font-weight:600; letter-spacing:.5px}
+.head p{font-size:13px; color:var(--mute); margin-top:6px}
+
+.card{
+  width:100%; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-lg); padding:22px; box-shadow:var(--shadow);
+}
+
+.stage{
+  width:288px; height:288px; position:relative;
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:50%; box-shadow:var(--shadow);
+  display:flex; align-items:center; justify-content:center;
+}
+.stage canvas{border-radius:50%}
+
+.phase{
+  font-size:29px; font-weight:300; letter-spacing:6px;
+  color:var(--accent); min-height:42px; text-align:center;
+  transition:color .4s var(--ease);
+}
+.cd{font-size:15px; color:var(--soft); font-variant-numeric:tabular-nums; min-height:22px}
+.meta{font-size:13px; color:var(--mute); min-height:20px; text-align:center}
+
+.row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+.stats{display:flex; gap:10px; width:100%}
+.stat{
+  flex:1; background:var(--surface-2); border:1px solid var(--line);
+  border-radius:var(--r-md); padding:12px; text-align:center;
+}
+.stat .k{font-size:11px; color:var(--mute); letter-spacing:1px}
+.stat .v{font-size:21px; font-weight:600; margin-top:3px; font-variant-numeric:tabular-nums}
+
+.chip{
+  padding:9px 18px; font-size:13px; font-weight:500; font-family:inherit;
+  background:var(--surface); color:var(--soft);
+  border:1px solid var(--line); border-radius:999px; cursor:pointer;
+  transition:all .2s var(--ease);
+}
+.chip:hover{border-color:var(--accent); color:var(--accent)}
+.chip.active{
+  background:var(--accent); border-color:var(--accent); color:#fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.14);
+}
+
+.btn{
+  padding:13px 42px; font-size:15px; font-weight:600; font-family:inherit;
+  letter-spacing:3px; background:var(--accent); color:#fff;
+  border:none; border-radius:var(--r-md); cursor:pointer;
+  transition:transform .15s var(--ease), box-shadow .2s var(--ease);
+  box-shadow:0 6px 20px rgba(0,0,0,.16);
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.ghost{background:transparent; border:1px solid var(--line); color:var(--soft); box-shadow:none}
+
+.lang{
+  position:fixed; top:16px; right:16px; z-index:20;
+  padding:7px 14px; font-size:12px; font-weight:600; font-family:inherit;
+  background:var(--surface); color:var(--soft);
+  border:1px solid var(--line); border-radius:999px; cursor:pointer;
+  transition:all .2s var(--ease);
+}
+.lang:hover{border-color:var(--accent); color:var(--accent)}
+
+.hint{font-size:12px; color:var(--mute); text-align:center; line-height:1.7}
+
+@media (max-width:380px){
+  .stage{width:250px;height:250px}
+  .phase{font-size:25px; letter-spacing:4px}
+}
+
+:root{ --accent:#42a5f5; --accent-soft:#e7f2fd; }
+
+.field{margin-bottom:14px}
+.field label{display:block; font-size:12px; color:var(--mute); margin-bottom:6px; letter-spacing:1px}
+select,input[type=number]{
+  width:100%; padding:12px 14px; font-size:16px; font-family:inherit;
+  border:1px solid var(--line); border-radius:var(--r-md);
+  background:var(--surface-2); color:var(--text);
+}
+select:focus,input[type=number]:focus{outline:none; border-color:var(--accent); background:var(--surface)}
+.swap{display:flex; justify-content:center; margin:4px 0 14px}
+
 </style>
 </head>
 <body>
+<button class="lang" id="langBtn" onclick="toggleLang()">EN</button>
+<div class="app">
 
-<button id="fs-btn" onclick="toggleFS()" data-key="fsBtn">全屏</button>
-
-<button id="lang-btn" onclick="toggleLang()" data-key="langBtn">中/EN</button>
-
-<div id="app">
-  <h2 id="title" data-key="title">单位换算器</h2>
-  <div id="category-tabs">
-    <button class="cat-tab active" data-cat="length" onclick="switchCat('length')" data-key="length">长度</button>
-    <button class="cat-tab" data-cat="weight" onclick="switchCat('weight')" data-key="weight">重量</button>
-    <button class="cat-tab" data-cat="temperature" onclick="switchCat('temperature')" data-key="temp">温度</button>
-    <button class="cat-tab" data-cat="area" onclick="switchCat('area')" data-key="area">面积</button>
-    <button class="cat-tab" data-cat="speed" onclick="switchCat('speed')" data-key="speed">速度</button>
-    <button class="cat-tab" data-cat="data" onclick="switchCat('data')" data-key="data">存储</button>
+  <div class="head">
+    <h1 id="t_title">单位换算</h1>
+    <p id="t_sub">选择类别，任意一侧输入即可双向换算</p>
   </div>
 
-  <div class="converter-row">
-    <input type="number" id="input-val" value="1" oninput="convert()" step="any">
-    <select id="unit-from" class="unit-select" onchange="convert()"></select>
-    <button class="swap-btn" onclick="swapUnits()">&#8644;</button>
-    <select id="unit-to" class="unit-select" onchange="convert()"></select>
+  <div class="card">
+    <div class="field">
+      <label id="t_cat">类别</label>
+      <select id="cat" onchange="onCategoryChange()"></select>
+    </div>
+
+    <div class="field">
+      <label id="t_from">从</label>
+      <select id="from" onchange="convertFrom()"></select>
+    </div>
+
+    <div class="field">
+      <label id="t_amount">数值</label>
+      <input type="number" id="amount" value="1" oninput="convertFrom()">
+    </div>
+
+    <div class="swap">
+      <button class="chip" onclick="swapUnits()">↑↓ 交换</button>
+    </div>
+
+    <div class="field">
+      <label id="t_to">到</label>
+      <select id="to" onchange="convertFrom()"></select>
+    </div>
+
+    <div class="field" style="margin-bottom:0">
+      <label id="t_result">结果</label>
+      <input type="text" id="result" readonly>
+    </div>
   </div>
 
-  <div id="result-row">
-    <div id="result">--</div>
-    <div id="formula"></div>
-  </div>
+  <div class="hint" id="t_hint">温度采用专用公式换算，不走统一系数</div>
 
-  <div id="presets"></div>
 </div>
-
 <script>
-const i18n = {
-  zh: {
-    langBtn:'中/EN', title:'单位换算器',
-    length:'长度', weight:'重量', temp:'温度', area:'面积', speed:'速度', data:'存储',
-    meter:'米(m)', km:'千米(km)', cm:'厘米(cm)', mm:'毫米(mm)', inch:'英寸(in)', foot:'英尺(ft)', mile:'英里(mi)',
-    kg:'千克(kg)', g:'克(g)', mg:'毫克(mg)', ton:'吨(t)', lb:'磅(lb)', oz:'盎司(oz)',
-    celsius:'摄氏度(°C)', fahrenheit:'华氏度(°F)', kelvin:'开尔文(K)',
-    sqm:'平方米(m²)', sqkm:'平方千米(km²)', ha:'公顷(ha)', acre:'英亩', sqft:'平方英尺(ft²)',
-    ms:'米/秒(m/s)', kmh:'千米/时(km/h)', mph:'英里/时(mph)', knot:'节(kn)',
-    byte:'字节(B)', kb:'千字节(KB)', mb:'兆字节(MB)', gb:'吉字节(GB)', tb:'太字节(TB)',
-    presets:'常用值: '
-  },
-  en: {
-    langBtn:'中/EN', title:'Unit Converter',
-    length:'Length', weight:'Weight', temp:'Temp', area:'Area', speed:'Speed', data:'Data',
-    meter:'Meter(m)', km:'Kilometer(km)', cm:'Centimeter(cm)', mm:'Millimeter(mm)', inch:'Inch(in)', foot:'Foot(ft)', mile:'Mile(mi)',
-    kg:'Kilogram(kg)', g:'Gram(g)', mg:'Milligram(mg)', ton:'Ton(t)', lb:'Pound(lb)', oz:'Ounce(oz)',
-    celsius:'Celsius(°C)', fahrenheit:'Fahrenheit(°F)', kelvin:'Kelvin(K)',
-    sqm:'Square Meter(m²)', sqkm:'Square Kilometer(km²)', ha:'Hectare(ha)', acre:'Acre', sqft:'Square Foot(ft²)',
-    ms:'m/s', kmh:'km/h', mph:'mph', knot:'Knot(kn)',
-    byte:'Byte(B)', kb:'Kilobyte(KB)', mb:'Megabyte(MB)', gb:'Gigabyte(GB)', tb:'Terabyte(TB)',
-    presets:'Presets: '
-  }
-};
-let lang = 'zh';
-let t = i18n[lang];
-let currentCat = 'length';
 
-const categories = {
-  length: {
-    units: ['meter','km','cm','mm','inch','foot','mile'],
-    toBase: { meter:1, km:1000, cm:0.01, mm:0.001, inch:0.0254, foot:0.3048, mile:1609.344 },
-    presets: [1,10,100,0.5,3.28]
-  },
-  weight: {
-    units: ['kg','g','mg','ton','lb','oz'],
-    toBase: { kg:1, g:0.001, mg:1e-6, ton:1000, lb:0.453592, oz:0.0283495 },
-    presets: [1,5,100,0.5,2.205]
-  },
-  temperature: {
-    units: ['celsius','fahrenheit','kelvin'],
-    presets: [0,100,37,-40,273.15]
-  },
-  area: {
-    units: ['sqm','sqkm','ha','acre','sqft'],
-    toBase: { sqm:1, sqkm:1e6, ha:10000, acre:4046.86, sqft:0.092903 },
-    presets: [1,100,1000,2.471,10.764]
-  },
-  speed: {
-    units: ['ms','kmh','mph','knot'],
-    toBase: { ms:1, kmh:0.277778, mph:0.44704, knot:0.514444 },
-    presets: [1,100,60,10]
-  },
-  data: {
-    units: ['byte','kb','mb','gb','tb'],
-    toBase: { byte:1, kb:1024, mb:1048576, gb:1073741824, tb:1099511627776 },
-    presets: [1,1024,1048576,1000,8]
+/* ============================================================
+ * 单位换算
+ * ------------------------------------------------------------
+ * 统一模型：每个单位定义一个 toBase（转基准值）和 fromBase（基准值转回）。
+ *   换算路径 = fromBase(目标单位, toBase(源单位, 值))
+ *
+ * 为什么大多数单位只写一个 factor 就够？
+ *   因为长度/重量/面积这类都是线性换算：base = value * factor，
+ *   所以 toBase = value*factor，fromBase = base/factor，互为逆运算即可。
+ *
+ * 温度是特例：摄氏→华氏是 value*9/5+32，不是纯乘法，
+ *   所以温度单独用 to/from 函数对来定义。
+ * ========================================================== */
+
+/* 线性单位表：factor = 换算到基准单位所需的倍数 */
+const UNITS = {
+  length: { label:'长度', base:'m', units:{
+    '毫米 mm':0.001, '厘米 cm':0.01, '米 m':1, '千米 km':1000,
+    '英寸 in':0.0254, '英尺 ft':0.3048, '码 yd':0.9144, '英里 mi':1609.344
+  }},
+  weight: { label:'重量', base:'kg', units:{
+    '毫克 mg':0.000001, '克 g':0.001, '千克 kg':1, '吨 t':1000,
+    '磅 lb':0.45359237, '盎司 oz':0.028349523, '市斤':0.5
+  }},
+  area: { label:'面积', base:'m²', units:{
+    '平方毫米':0.000001, '平方厘米':0.0001, '平方米':1,
+    '公顷 ha':10000, '平方千米':1000000, '英亩 acre':4046.8564224
+  }},
+  volume: { label:'体积', base:'L', units:{
+    '毫升 mL':0.001, '升 L':1, '立方米 m³':1000,
+    '美制加仑':3.785411784, '英制加仑':4.54609, '美制杯':0.2365882365
+  }},
+  time: { label:'时间', base:'s', units:{
+    '毫秒':0.001, '秒':1, '分钟':60, '小时':3600, '天':86400, '周':604800
+  }},
+  speed: { label:'速度', base:'m/s', units:{
+    '米/秒':1, '千米/小时':0.2777777778, '英里/小时':0.44704, '节 kn':0.5144444444
+  }},
+  data: { label:'数据存储', base:'MB', units:{
+    'KB':0.001, 'MB':1, 'GB':1000, 'TB':1000000
+  }}
+};
+
+/* 温度单独处理：非线性换算 */
+const TEMP = {
+  label:'温度',
+  units:{
+    '摄氏 °C': { to:function(v){return v;},                 from:function(v){return v;} },
+    '华氏 °F': { to:function(v){return (v-32)*5/9;},       from:function(v){return v*9/5+32;} },
+    '开尔文 K':{ to:function(v){return v-273.15;},          from:function(v){return v+273.15;} }
   }
 };
 
-function toggleLang(){ lang=lang==='zh'?'en':'zh'; t=i18n[lang]; updateUI(); }
-function updateUI(){
-  document.querySelectorAll('[data-key]').forEach(el=>{
-    let k=el.dataset.key;
-    if(el.tagName==='BUTTON'||el.tagName==='H2') el.textContent=t[k]||el.textContent;
+function isTemp(k){ return k === '__temp__'; }
+
+/** 构造类别下拉 */
+function buildCategories(){
+  const sel = document.getElementById('cat');
+  sel.innerHTML = '';
+  Object.keys(UNITS).forEach(function(k){
+    const o = document.createElement('option');
+    o.value = k; o.textContent = UNITS[k].label;
+    sel.appendChild(o);
   });
-  popUnits();
+  const t = document.createElement('option');
+  t.value = '__temp__'; t.textContent = TEMP.label;
+  sel.appendChild(t);
 }
 
-function switchCat(cat){
-  currentCat = cat;
-  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelector(`[data-cat="${cat}"]`).classList.add('active');
-  popUnits();
+/** 构造「从 / 到」两个单位下拉 */
+function buildUnitOptions(){
+  const key = document.getElementById('cat').value;
+  const names = isTemp(key) ? Object.keys(TEMP.units) : Object.keys(UNITS[key].units);
+  ['from','to'].forEach(function(id){
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    names.forEach(function(n){
+      const o = document.createElement('option');
+      o.value = n; o.textContent = n;
+      sel.appendChild(o);
+    });
+  });
+  // 默认让「到」落在第二个单位上，避免两边一样看不到效果
+  if (names.length > 1) document.getElementById('to').selectedIndex = 1;
 }
 
-function popUnits(){
-  let cat = categories[currentCat];
-  let fu=document.getElementById('unit-from'), tu=document.getElementById('unit-to');
-  fu.innerHTML=''; tu.innerHTML='';
-  cat.units.forEach(u=>{
-    let opt = document.createElement('option'); opt.value=u; opt.textContent=t[u]; fu.appendChild(opt);
-  });
-  cat.units.forEach(u=>{
-    let opt = document.createElement('option'); opt.value=u; opt.textContent=t[u]; tu.appendChild(opt);
-  });
-  if(currentCat==='length'||currentCat==='speed'){ fu.value=cat.units[0]; tu.value=cat.units[1]; }
-  else if(currentCat==='temperature'){ fu.value='celsius'; tu.value='fahrenheit'; }
-  else { fu.value=cat.units[0]; tu.value=cat.units[2]||cat.units[1]; }
+function onCategoryChange(){ buildUnitOptions(); convertFrom(); }
 
-  // presets
-  let pdiv=document.getElementById('presets');
-  pdiv.innerHTML = '<span style="font-size:12px;color:#aaa;margin-right:4px">'+t.presets+'</span>';
-  cat.presets.forEach(v=>{
-    let btn=document.createElement('button'); btn.className='preset-btn';
-    btn.textContent=v; btn.onclick=()=>{ document.getElementById('input-val').value=v; convert(); };
-    pdiv.appendChild(btn);
-  });
-  convert();
+/** 执行换算：源 → 基准 → 目标 */
+function convertFrom(){
+  const key = document.getElementById('cat').value;
+  const from = document.getElementById('from').value;
+  const to   = document.getElementById('to').value;
+  const raw  = document.getElementById('amount').value;
+  const val  = parseFloat(raw);
+
+  const out = document.getElementById('result');
+
+  if (raw === '' || isNaN(val)){ out.value = ''; return; }
+
+  let result;
+  if (isTemp(key)){
+    const base = TEMP.units[from].to(val);      /* 源 → 摄氏（基准） */
+    result = TEMP.units[to].from(base);         /* 摄氏 → 目标 */
+  } else {
+    const m = UNITS[key].units;
+    const base = val * m[from];                 /* 源 → 基准 */
+    result = base / m[to];                      /* 基准 → 目标 */
+  }
+
+  // 根据量级决定保留几位小数，避免 0.0000001 这种难读的输出
+  const a = Math.abs(result);
+  out.value = (a !== 0 && (a < 0.001 || a >= 1e6))
+    ? result.toExponential(4)
+    : parseFloat(result.toFixed(6)).toString();
 }
 
 function swapUnits(){
-  let fu=document.getElementById('unit-from'), tu=document.getElementById('unit-to');
-  [fu.value, tu.value] = [tu.value, fu.value];
-  convert();
+  const f = document.getElementById('from'), t = document.getElementById('to');
+  const i = f.selectedIndex;
+  f.selectedIndex = t.selectedIndex;
+  t.selectedIndex = i;
+  convertFrom();
 }
 
-function convertTemperature(val, from, to){
-  let celsius;
-  if(from==='celsius') celsius=val;
-  else if(from==='fahrenheit') celsius=(val-32)*5/9;
-  else celsius=val-273.15;
-  if(to==='celsius') return celsius;
-  if(to==='fahrenheit') return celsius*9/5+32;
-  return celsius+273.15;
+function refresh(){
+  const L = I18N[lang];
+  document.getElementById('t_title').textContent = L.title;
+  document.getElementById('t_sub').textContent   = L.sub;
+  document.getElementById('t_hint').textContent  = L.hint;
+  document.getElementById('t_cat').textContent   = L.cat;
+  document.getElementById('t_from').textContent  = L.from;
+  document.getElementById('t_to').textContent    = L.to;
+  document.getElementById('t_amount').textContent= L.amount;
+  document.getElementById('t_result').textContent= L.result;
+  document.getElementById('langBtn').textContent = (lang==='zh') ? 'EN' : '中';
 }
+function toggleLang(){ lang = (lang==='zh') ? 'en' : 'zh'; refresh(); }
 
-function convert(){
-  let val=parseFloat(document.getElementById('input-val').value);
-  if(isNaN(val)){ document.getElementById('result').textContent='--'; document.getElementById('formula').textContent=''; return; }
-  let from=document.getElementById('unit-from').value;
-  let to=document.getElementById('unit-to').value;
-  let result;
-  if(currentCat==='temperature'){
-    result = convertTemperature(val, from, to);
-  } else {
-    let cat = categories[currentCat];
-    let baseVal = val * cat.toBase[from];
-    result = baseVal / cat.toBase[to];
-  }
-  let rStr = Number.isInteger(result) ? result.toString() : parseFloat(result.toPrecision(10)).toString();
-  document.getElementById('result').textContent = rStr + ' ' + t[to].split('(')[0]?.trim() || '';
-  document.getElementById('formula').textContent = val + ' ' + t[from].split('(')[0]?.trim() + ' = ' + rStr;
+const I18N_ = {
+  zh:{ title:'单位换算', sub:'选择类别，任意一侧输入即可双向换算',
+       hint:'温度采用专用公式换算，不走统一系数',
+       cat:'类别', from:'从', to:'到', amount:'数值', result:'结果' },
+  en:{ title:'Unit Converter', sub:'Pick a category, type on either side',
+       hint:'Temperature uses its own formulas',
+       cat:'Category', from:'From', to:'To', amount:'Amount', result:'Result' }
+};
+const I18N = I18N_;
+
+buildCategories();
+buildUnitOptions();
+refresh();
+convertFrom();
+
+/* ---------- PWA 注册 ----------
+ * 注册 Service Worker 后本页被缓存，断网也能打开。
+ * 放在最后且 catch 掉异常：即使浏览器不支持也不影响正常功能。 */
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  });
 }
-
-popUnits();
-
-function toggleFS(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
 </script>
 </body>
 </html>
