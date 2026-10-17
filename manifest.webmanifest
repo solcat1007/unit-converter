@@ -1,0 +1,19 @@
+{
+  "name": "单位换算 · 小工具",
+  "short_name": "单位换算",
+  "description": "长度重量温度等常用单位互转",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f7f9",
+  "theme_color": "#42a5f5",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
