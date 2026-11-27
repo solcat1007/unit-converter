@@ -1,7 +1,8 @@
 {
+  "version": "2.0.0",
   "name": "单位换算 · 小工具",
   "short_name": "单位换算",
-  "description": "长度重量温度等常用单位互转",
+  "description": "长度重量温度角度压力能量等单位互转，带换算历史 v2.0",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
